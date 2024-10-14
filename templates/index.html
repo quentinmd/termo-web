@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil</title>
+    <link rel="icon" type="image/png" href="static/thermo.png">
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+  <header>
+    <!-- <img src="static/thermo.png" alt="thermo" class="image"> -->
+    <h1>Mon beau thermomètre</h1>
+  </header>
+  <div class="titre-haut">
+    <p>Il fait 
+      <span id="temperature" class="temperature">{{temperature}}</span>
+      °C</p>
+  </div>
+  <div class="historique">
+    <p>Historique des données :</p>
+    <button onclick="window.location.href='/history'">Voir l'historique</button>
+  </div>
+  <footer>
+    <p>Projet réalisé par les élèves de la classe de terminal STI2D SIN du lycée Saint Félix</p>
+  </footer>
+  <script>
+    function updateTemperature() {
+        fetch('/temperature')
+        .then(response => response.json())
+        .then(data => {
+            let temp = data.temperature;
+            let tempElement = document.getElementById("temperature");
+            
+            tempElement.textContent = temp;
+
+            tempElement.classList.remove("temperature-bleu", "temperature-vert", "temperature-rouge");
+
+            if (temp <= 10) {
+                tempElement.classList.add("temperature-bleu");
+            } else if (temp > 10 && temp <= 25) {
+                tempElement.classList.add("temperature-vert");
+            } else {
+                tempElement.classList.add("temperature-rouge");
+            }
+        })
+        .catch(error => {
+            console.error("Erreur lors de la mise à jour de la température:", error);
+        });
+    }
+
+    updateTemperature();
+
+    setInterval(updateTemperature, 6000);
+  </script>
+</body>
+</html>
