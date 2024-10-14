@@ -6,63 +6,18 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="icon" type="image/png" href="/static/thermo.png">
+    
 </head>
 <body>
     <header>
         <h2>Mon thermomètre</h2>
-        <nav>
-        </nav>
     </header>
     <h2>Historique des données</h2>
-    <div id='historique'><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div id='historique'></div>
     <script type="text/javascript">
-        function formatTimestamp(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('fr-FR', { hour12: false });
-        }
-
-        function fetchData() {
-            fetch('/temperature_data')
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Raw data:', data);  // Log raw data
-
-                    const timestamps = data.data.map(row => row);
-                    const formattedTimestamps = timestamps.map(ts => formatTimestamp(ts));
-                    const temperatures = data.data.map(row => parseFloat(row));
-
-                    console.log('Formatted timestamps:', formattedTimestamps);  // Log formatted timestamps
-                    console.log('Temperatures:', temperatures);  // Log temperatures
-
-                    const plotData = [{
-                        x: formattedTimestamps,
-                        y: temperatures,
-                        type: 'scatter',
-                        mode: 'lines+markers',
-                        marker: { color: 'red' }
-                    }];
-
-                    const layout = {
-                        title: 'Historique des températures',
-                        xaxis: {
-                            title: 'Temps (s)',
-                            type: 'category'
-                        },
-                        yaxis: {
-                            title: 'Température (°C)'
-                        }
-                    };
-
-                    Plotly.newPlot('historique', plotData, layout);
-                })
-                .catch(error => console.error('Error fetching data:', error));
-        }
-
-        // Fetch data initially
-        fetchData();
-
-        // Refresh data every 10 seconds
-        setInterval(fetchData, 10000);
+        data = [{{ histo|tojson|safe }}]
+        console.log(data)
+        Plotly.newPlot('historique', data);
     </script>
     <button onclick="window.location.href='/'">Retourner à l'accueil</button>
 </body>
