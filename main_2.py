@@ -11,57 +11,36 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-CSV_FILE = 'temperature_data.csv'
-
-# Initialisation du fichier CSV
-def init_csv():
-    if not os.path.exists(CSV_FILE):
-        with open(CSV_FILE, mode='w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow(['timestamp', 'temperature'])
-
-init_csv()
-
-# Fonction pour insérer des données dans le fichier CSV
-def insert_temperature(temp):
-    with open(CSV_FILE, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([datetime.now().isoformat(), temp])
-
-# Fonction pour récupérer les données du fichier CSV
-def get_temperature_data():
-    data = []
-    with open(CSV_FILE, mode='r') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip header
-        for row in reader:
-            data.append(row)
-    return data
-
-temperature = 20
+temperature = 15
+temperatures = []
+temps = []
 
 @app.get("/", response_class=HTMLResponse)
 def root(request: Request):
     print("Ma fonction python s'execute")
-    return templates.TemplateResponse("index.html", {"request": request, "temperature": temperature})
+    return templates.TemplateResponse("index.html", {"request": request, "temperature":temperature})
+
 
 @app.get("/history", response_class=HTMLResponse)
 def history(request: Request):
-    return templates.TemplateResponse("history.html", {"request": request})
-
-@app.get("/temperature_data", response_class=JSONResponse)
-def temperature_data():
-    data = get_temperature_data()
-    return {"data": data}
+    histo = {
+        "x": temps,
+        "y": temperatures,
+        "type": 'scatter'
+    }
+    return templates.TemplateResponse("history.html", {"request": request, "histo": histo})
 
 @app.post("/temperature")
 async def temp_rcv(req: Request):
-    global temperature
+    global temperature, temperatures
 
     data = await req.body()
     temperature = int(data.decode())
-    insert_temperature(temperature)
-
+    # Ajouter la température dans la liste températures
+    temperatures.append(temperature)
+    # Ajouter l'heure dans la liste temps
+    current_time = datetime.now().strftime("%H:%M:%S")
+    temps.append(current_time)
     print("temperature =", temperature)
 
     return True
